@@ -72,14 +72,14 @@ class CountryRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 
 class ListMovieView(ListAPIView):
     queryset = Movie.objects.all()
-    serializer_class = MovieDetailSerializer
+    serializer_class = MovieSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 class CreateMovieView(CreateAPIView):
     queryset = Movie.objects.all()
-    serializer_class = MovieDetailSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    serializer_class = MovieCreateSerializer
+    permission_classes = [IsAdminUser]
 
 
 class MovieRetrieveView(RetrieveAPIView):
@@ -87,6 +87,7 @@ class MovieRetrieveView(RetrieveAPIView):
     serializer_class = MovieDetailSerializer
     lookup_field = 'id'
     permission_classes = [IsAuthenticatedOrReadOnly]
+    
 
 
 
@@ -96,6 +97,22 @@ class MovieUpdateDeleteView(UpdateAPIView, DestroyAPIView):
     lookup_field = 'id'
     permission_classes = [IsAuthenticated, IsAdminUser]
 
+
+class MovieUpdateView(UpdateAPIView):
+    queryset = Movie.objects.all()
+    serializer_class = MovieUpdateViewSerializer
+    lookup_field = 'id'
+
+    def get_queryset(self):
+       data = Movie.objects.all()
+       return data
+    
+    def update(self, request, *args, **kwargs):
+        movie = self.get_object()
+        print(movie.id)
+        movie.views +=1
+        movie.save()
+        return Response('Update successful', status= status.HTTP_200_OK)
 
 
 #COMMENT VIEWS----------------------------------------------------------------

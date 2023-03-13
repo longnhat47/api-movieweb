@@ -3,14 +3,11 @@ from rest_framework.serializers import ModelSerializer, HyperlinkedIdentityField
 from accounts.serializers import UserCommentSerializer
 import requests
 
+
 class CategorySerializer(ModelSerializer):
-    link = HyperlinkedIdentityField(
-        view_name='category-detail',
-        lookup_field = 'id'
-    )
     class Meta:
         model = Category
-        fields = ['id', 'name', 'link']
+        fields = ['id', 'name']
 
 
 class CountrySerializer(ModelSerializer):
@@ -23,34 +20,60 @@ class MovieSerializer(ModelSerializer):
     class Meta:
         model = Movie
         fields = ['id', 'category', 'country', 'name',
-                  'thumbnail', 'created_at', 'status']
+                  'thumbnail', 'views', 'created_at', 'status']
+        
+class MovieUpdateViewSerializer(ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = ['id']
+    
+
+class MovieCreateSerializer(ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = ['id', 'category', 'country', 'name', 'thumbnail',
+                  'description', 'video', 'views', 'created_at', 'status']
+        extra_kwargs = {
+            'status': {'read_only': True},
+            'views': {'read_only': True}
+        }
 
 
 class MovieDetailSerializer(ModelSerializer):
-    link = HyperlinkedIdentityField(
-        view_name='movie-detail',
-        lookup_field = 'id'
-    )
     comment = SerializerMethodField()
+    category = SerializerMethodField()
+    country = SerializerMethodField()
+
     class Meta:
         model = Movie
-        fields = ['id', 'link', 'category', 'country', 'name', 'thumbnail',
-                  'description', 'video', 'comment', 'created_at', 'status']
+        fields = ['id', 'category', 'country', 'name', 'thumbnail',
+                  'description', 'video', 'comment', 'views', 'created_at', 'status']
         extra_kwargs = {
-            'status': {'read_only': True}
+            'status': {'read_only': True},
+            'views': {'read_only': True}
         }
 
+    def get_category(self, obj):
+        cate = Category.objects.filter(id=obj.category.id)
+        return CategorySerializer(instance=cate, many=True).data[0]
+
+    def get_country(self, obj):
+        coun = Country.objects.filter(id=obj.country.id)
+        return CountrySerializer(instance=coun, many=True).data[0]
+
     def get_comment(self, obj):
-        comment = Comment.objects.filter(movie= obj.id)
+        comment = Comment.objects.filter(movie=obj.id)
         return CommentSerializer(instance=comment, many=True).data
+
 
 
 class CommentSerializer(ModelSerializer):
     user = SerializerMethodField()
+
     class Meta:
         model = Comment
         fields = ['id', 'movie', 'user', 'content', 'created_at']
 
     def get_user(self, obj):
-        u = User.objects.filter(id = obj.user.id)
+        u = User.objects.filter(id=obj.user.id)
         return (UserCommentSerializer(instance=u, many=True).data)[0]

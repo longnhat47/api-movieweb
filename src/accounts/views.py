@@ -25,7 +25,7 @@ class UserLoginView(CreateAPIView):
             token = create_jwt(user)
             user = get_user_model().objects.filter(email=email)
             u = UserLoginResponseSerializer(instance=user, many = True).data
-            response = {"message":"Login successful", "user": u[0],"token": token}
+            response = {"user": u[0],"token": token}
             return Response(data=response, status=status.HTTP_200_OK)
         return Response(data={"message":"Login fail"}, status=status.HTTP_400_BAD_REQUEST)
 

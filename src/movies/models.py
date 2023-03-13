@@ -29,6 +29,7 @@ class Movie(models.Model):
     description = models.TextField()
     video = models.FileField(upload_to='movies')
     created_at = models.DateTimeField(auto_now_add=True)
+    views = models.IntegerField(default=0)
     status = models.BooleanField(default=True)
 
     def __str__(self):
